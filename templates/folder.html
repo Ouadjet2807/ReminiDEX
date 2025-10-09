@@ -1,0 +1,401 @@
+{% extends 'layout.html' %} {% block main %}
+
+<div class="container" id="folder">
+  <div class="header d-sm-flex justify-content-between align-items-center py-5">
+    <div class="name d-flex align-items-center">
+      <i class="text-primary fa-regular fa-folder-open"></i>
+      <h2>{{folder.name}}</h2>
+    </div>
+    <div class="folder_actions d-flex justify-content-between align-items-center">
+      <button
+        class="btn rounded-pill btn-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#contentModal"
+      >
+        <i class="fa-solid fa-plus"></i>
+        Add content
+      </button>
+      <div class="btn rounded-circle btn-primary dropdown-center mx-2" role="button"
+          data-bs-toggle="dropdown"
+          aria-expanded="false">
+        <i
+          class="fa-solid fa-ellipsis"
+        ></i>
+
+        <ul class="dropdown-menu mt-3 p-0">
+          <li class="text-primary dropdown-item rounded-top-3" data-bs-toggle="modal" data-bs-target="#editModal">Edit</li>
+          <li><hr class="dropdown-divider m-0" /></li>
+          <li class="text-primary dropdown-item rounded-bottom-3" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="folder_lists d-flex flex-column">
+    {% if folder_lists | length < 1 %}
+    <div class="message p-5 d-flex align-items-center justify-content-center">
+      <span>No list</span>
+    </div>
+    {% endif %} {% for list in folder_lists %}
+    <div
+      class="list d-flex justify-content-between align-items-center rounded-4 my-2 py-3 px-4"
+    >
+      <a
+        class="wrapper d-flex align-items-center text-decoration-none text-dark"
+        href="{{ url_for('show_list', list_path=list.path) }}"
+      >
+        <div class="list-icon bg-light text-primary p-2 rounded-3">
+          <i class="bi bi-collection"></i>
+        </div>
+        <div class="information">
+          <h4>{{list.title}}</h4>
+          <span>List • </span>
+          <span>{{list.cards | length}} terms</span>
+        </div>
+      </a>
+      <div class="options dropdown">
+        <i
+          class="fa-solid fa-ellipsis"
+          onclick="event.stopPropagation()"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+        ></i>
+        <ul class="dropdown-menu">
+          <li>
+            <button
+              id="{{list.id}}_add_keywords"
+              value="{{list.keywords}}"
+              class="dropdown-item text-primary add-keywords"
+              data-list-id="{{ list.id }}"
+              data-bs-toggle="modal"
+              data-bs-target="#keywordsModal"
+            >
+              <i class="fa-solid fa-tags"></i> Add or delete keywords
+            </button>
+          </li>
+          <li>
+            <form class="m-0 p-0" action="/remove_from_folder" method="post">
+              <input type="hidden" name="list_id" value="{{list.id}}" />
+              <input type="hidden" name="folder_id" value="{{folder.id}}" />
+              <input type="hidden" name="folder_path" value="{{folder.path}}" />
+              <button
+                class="dropdown-item text-primary border border-top-0 border-bottom-0 border-start-0 border-end-0"
+              >
+                <i class="fa-solid fa-minus"></i> Remove from folder
+              </button>
+            </form>
+          </li>
+        </ul>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+<div
+    class="modal fade"
+    id="editModal"
+    aria-labelledby="editModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="text-primary bi bi-folder2 pe-1"></i> Edit folder
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+
+        <div class="modal-body">
+          <form action="/edit_folder" method="post">
+            <input type="hidden" name="folder_id" value="{{folder.id}}">
+            <input type="hidden" name="folder_path" value="{{folder.path}}">
+            <input type="text" class="form-control" name="folder_name" value="{{folder.name}}">
+            <button type="submit" class="btn btn-primary">Finish</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<div
+  class="modal fade"
+  id="keywordsModal"
+  aria-labelledby="keywordsModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="bi bi-plus"></i> Add or delete keywords
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body" id="add_keywords_modal_body">
+        <button
+          class="createKeywordsButton my-2 btn btn-primary rounded-circle"
+          data-folder-id="{{folder.id}}"
+          data-bs-toggle="modal"
+          data-bs-target="#createKeywordsModal"
+        >
+          <i class="bi bi-plus"></i>
+        </button>
+        <div class="keywords-list d-flex py-3">
+          {% for keyword in folder.keywords %}
+          <label for="" class="bg-light d-flex py-2 px-3 rounded-pill">
+            <input
+              class="keywordInput"
+              type="checkbox"
+              name="keyword"
+              data-keyword-id="{{keyword.id}}"
+            />{{keyword.keyword}}</label
+          >
+          {% endfor %}
+        </div>
+        <button
+          class="btn btn-primary"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        >
+          Finish
+        </button>
+      </div>
+     </div>
+    </div>
+  </div>
+</div>
+
+
+<div
+  class="modal fade"
+  id="contentModal"
+  aria-labelledby="contentModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="text-primary bi bi-folder2 pe-1"></i> Add to folder
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="lists d-flex flex-column">
+          {% if all_lists | length < 1 %}
+            <p class="text-center py-4">No lists</p>
+            <button class="btn btn-primary rounded-pill mx-auto">
+              <a class="text-light text-decoration-none" href="{{ url_for('create_list', list=None) }}">Create a list</a>
+            </button>
+          {% endif %}
+          {% for item in all_lists %} {% if item not in folder_lists %}
+          <div
+            class="add-content-list d-flex justify-content-between align-items-center px-3"
+          >
+            <span>{{item.title}}</span>
+            <form action="/add_to_folder" method="post">
+              <input type="hidden" name="folder_path" value="{{folder.path}}" />
+              <input type="hidden" name="folder_id" value="{{folder.id}}" />
+              <input type="hidden" name="list_id" value="{{item.id}}" />
+              <button type="submit" class="btn rounded-circle btn-primary p-1">
+                <i class="fa fa-plus"></i>
+              </button>
+            </form>
+          </div>
+          {% endif %} {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div
+  class="modal fade"
+  id="createKeywordsModal"
+  aria-labelledby="createKeywordsModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-plus"></i> New keyword</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body" id="create_keywords_modal_body"></div>
+    </div>
+  </div>
+</div>
+
+
+<div
+  class="modal fade"
+  id="deleteModal"
+  aria-labelledby="deleteModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Delete this folder ?</h2>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body" id="add_keywords_modal_body">
+        <h3>{{folder.name}}</h3>
+        <p>
+          You are about to delete this folder and all its content, you won't be
+          able to access it any more
+        </p>
+        <small
+          ><strong
+            >Are you really sure ? It will be impossible to cancel this
+            operation</strong
+          ></small
+        >
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button class="btn btn-danger" type="button">
+          <a
+            class="text-light text-decoration-none"
+            href="{{ url_for('delete_folder', folder_path=folder.path, folder=folder.id) }}"
+            >Delete</a
+          >
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %} {% block script %}
+
+<script>
+  /**
+  * Folder's setting
+  * Handles cards lists and folder's keywords.
+  */
+
+   const folderPath = {{ folder.path | tojson | safe }};
+   const listsInFolder = {{ folder_lists | tojson | safe }};
+
+   let selectedList = {}
+
+   const addKeywordsButton = document.querySelectorAll(".add-keywords");
+   const addKeywordsContainer = document.querySelector(".keywords-list");
+   const createKeywordsButton = document.querySelector(".createKeywordsButton")
+   const createKeywordsModal = document.getElementById("create_keywords_modal_body");
+   const lists = document.querySelectorAll(".list")
+   const listKeywords = addKeywordsButton.value;
+
+  const checkValue = (value, checkbox) => {
+      if(!value) {
+        checkbox.removeAttribute("checked")
+      } else {
+        checkbox.setAttribute("checked", "")
+      }
+   }
+
+   // Populate the keywords checkboxes list
+
+   addKeywordsButton.forEach(button => {
+     button.addEventListener("click", () => {
+       selectedList = listsInFolder.filter(list => list.id == button.dataset.listId)
+
+       createKeywordsButton.setAttribute("data-list-id", button.dataset.listId)
+
+       const keywordInputs = document.querySelectorAll(".keywordInput");
+
+       keywordInputs.forEach((checkbox) => {
+
+         checkbox.setAttribute("data-list-id", button.dataset.listId)
+
+         selectedList[0].keywords.forEach(keyword => {
+           if(keyword.id = checkbox.dataset.keywordId) {
+             checkValue(keyword.active, checkbox)
+           }
+         })
+
+         checkValue(checkbox.checked, checkbox)
+
+         // Remove/Add keyword from the folder table on toggle
+
+         checkbox.addEventListener("change", async () => {
+
+           const listId = checkbox.dataset.listId;
+           const keywordId = checkbox.dataset.keywordId;
+           const active = checkbox.checked;
+
+
+           try {
+             await fetch("/update_keyword_status", {
+               method: "POST",
+               headers: {
+                 "Content-Type": "application/json",
+               },
+               body: JSON.stringify({
+                 list_id: listId,
+                 keyword_id: keywordId,
+                 active: active,
+               }),
+             });
+             console.log("fetch");
+           } catch (err) {
+             console.error("Error updating keyword:", err);
+           }
+         });
+       });
+
+     })
+   })
+
+   // Populate the createKeywordsModal with the folder and list information
+
+   createKeywordsButton.addEventListener("click", () => {
+
+     createKeywordsModal.innerHTML = `
+     <form action="/create_keyword" method="post">
+       <input type="hidden" class="form-control" name="folder_id" value=${createKeywordsButton.dataset.folderId}>
+       <input type="hidden" class="form-control" name="folder_path" value=${folderPath}>
+       <input type="hidden" class="form-control" name="list_id" value=${createKeywordsButton.dataset.listId}>
+       <input type="text" autocomplete="off" class="form-control" name="keyword" placeholder="Keyword">
+       <button type="submit" class="btn btn-primary">Add</button>
+     </form>
+     `;
+
+   })
+</script>
+
+{% endblock %}

@@ -1,0 +1,736 @@
+{% extends 'layout.html' %} {% block main %}
+
+<div class="container" id="list_container">
+  <div class="container-header py-5 px-5 d-flex justify-content-between align-items-center">
+    <div class="list-name d-flex align-items-center">
+      <i class="text-primary pe-2 rounded-3 bi bi-collection"></i>
+      <h2>{{list.title}}</h2>
+    </div>
+    <div class="options dropdown">
+      <i
+        class="fa-solid fa-ellipsis"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+      ></i>
+      <ul class="dropdown-menu">
+        <li>
+          <a
+            class="dropdown-item text-primary text-decoration-none"
+            href="{{ url_for('create_list', list=list.id) }}"
+            ><i class="fa-solid fa-pen-to-square"></i> Edit this list</a
+          >
+        </li>
+        <li><hr class="dropdown-divider m-0" /></li>
+        <li>
+          <button
+            class="dropdown-item text-primary border-start-0 border-top-0 border-end-0 border-bottom-0"
+            data-bs-toggle="modal"
+            data-bs-target="#deleteModal"
+          >
+            <i class="fa-solid fa-trash-can"></i> Delete
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="cards"></div>
+  <div class="actions mx-auto my-4 align-items-center">
+    <div class="form-check form-switch">
+      <label class="form-check-label" for="enableProgressTracker"
+        >Track progress</label
+      >
+      <input
+        class="form-check-input"
+        type="checkbox"
+        role="switch"
+        id="enableProgressTracker"
+      />
+    </div>
+    <div class="changeCard d-flex justify-content-center align-items-center">
+      <button id="previous_button" class="previous btn btn-outline-primary rounded-circle">
+        <i class="bi bi-arrow-left"></i>
+      </button>
+      <div class="progression"></div>
+      <button id="next_button" class="next btn btn-outline-primary rounded-circle">
+        <i class="bi bi-arrow-right"></i>
+      </button>
+    </div>
+    <div
+      class="shuffle btn btn-outline-primary d-flex align-items-center p-2 rounded-circle"
+    >
+      <i class="fa-solid fa-shuffle"></i>
+    </div>
+  </div>
+  <div class="terms py-5 d-flex flex-column align-items-center">
+    {% for card in list.cards %}
+    <div
+      class="term bg-primary py-4 px-5 m-3 w-100 d-flex justify-content-between rounded-3"
+      id="card_{{card.id}}"
+      data-list-path="{{list.path}}"
+      data-list-id="{{list.id}}"
+      data-card-id="{{card.id}}"
+    >
+      <div class="term-container p-1 d-flex justify-content-between">
+        <div class="wrapper d-flex">
+          <span class="d-flex align-items-center">{{card.term}}</span>
+          <span
+            class="d-flex align-items-center ps-5 border border-2 border-light border-top-0 border-bottom-0 border-end-0"
+            >{{card.definition}}</span
+          >
+        </div>
+        <button class="btn text-light rounded-circle edit-button">
+          <i class="bi bi-pencil"></i>
+        </button>
+      </div>
+    </div>
+    {% endfor %}
+    <button class="btn btn-primary my-5 rounded-pill">
+      <a
+        class="text-light text-decoration-none"
+        href="{{ url_for('create_list', list_path=list.path, list=list.id) }}"
+        >Add or delete terms</a
+      >
+    </button>
+  </div>
+  
+</div>
+
+<div
+  class="modal fade"
+  id="deleteModal"
+  aria-labelledby="deleteModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Delete this list ?</h2>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body" id="add_keywords_modal_body">
+        <h3>{{list.title}}</h3>
+        <p>
+          You are about to delete this list and all its content, you won't be
+          able to access it any more
+        </p>
+        <small
+          ><strong
+            >Are you really sure ? It will be impossible to cancel this
+            operation</strong
+          ></small
+        >
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button class="btn btn-danger" type="button">
+          <a
+            class="text-light text-decoration-none"
+            href="{{ url_for('delete_list', list_path=list.path, list=list.id) }}"
+            >Delete</a
+          >
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %} {% block script %}
+
+<script>
+
+    /**
+  * Flashcards App Frontend Logic
+  * Handles card rendering, progress tracking, animations, and score visualization.
+  * Communicates with Flask backend via fetch for saving lesson results.
+  */
+
+  const themeToggle = document.querySelector(".theme-switcher")
+
+  const listId = {{ list.id | tojson | safe }};
+  const previous_lessons = {{ lessons | tojson | safe }}.reverse();
+  const listPath = {{ list.path | tojson | safe }};
+  const cardsList = {{ list.cards | tojson | safe }};
+
+  const shuffleButton = document.querySelector(".shuffle")
+
+  const cardsContainer = document.querySelector(".cards")
+
+  const progression = document.querySelector(".progression")
+
+  const MASTERED_TRESHOLD = 5
+
+  let filteredCardsList = cardsList
+
+  let shuffledCardsList = []
+
+  let shuffle = false
+  let trackProgress = false
+  let cardCounter = 0
+  let card = ''
+
+  let message = ""
+
+  let percentage = 0
+
+  let currentCard = !shuffle ? cardsList[cardCounter] : shuffledCardsList[cardCounter]
+
+  let score = {
+      mastered: 0,
+      still_learning: 0
+  }
+
+  let progressChart;
+
+
+  // -------------------- Cards list Adjustment Logic --------------------
+
+  const adjustCardsList = () => {
+
+    const WEIGHTS = {3: 1, 7: 0.5, 14: 0.25, default: 0.1}
+
+
+    // Get the days difference between two given dates
+    const getDaysDifference = (startDate, endDate) => {
+
+      let start = new Date(startDate)
+      let end = new Date(endDate)
+
+      let utc1 = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate())
+      let utc2 = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate())
+
+      let timeDiff = Math.abs(utc2 - utc1);
+
+      let difference = Math.ceil(timeDiff / (1000 * 3600 * 24))
+
+      return difference
+    }
+
+
+    if (previous_lessons.length > 0) {
+
+      let to_remove = []
+
+        cardsList.forEach(card => {
+            let mastered = 0
+
+            for (let i = 0; i < previous_lessons.length; i++) {
+
+                let currentDate = new Date()
+
+                // Checking how many days between today's lesson and the lesson we're currently checking
+                let daysDifferenceToday = getDaysDifference(currentDate, previous_lessons[i].lesson_date.slice(0, 10))
+
+                // Skip duplicate lessons on the same day
+                let daysDifferencePreviousLesson = i > 0 ? getDaysDifference(previous_lessons[i].lesson_date.slice(0, 10), previous_lessons[i-1].lesson_date.slice(0, 10)) : NaN
+
+                previous_lessons[i].cards.forEach(lesson_card => {
+
+                  let weight = 0;
+
+
+                    let equal_card_id = card.id == lesson_card.id
+
+                    // For the given card, check if the card was mastered during previous lesson (we only count one score per day)
+                    // adjust the "weight" according to how many days separate the current lesson from today's lesson,
+                    // the higher the difference is, the lesser it weights in the spaced repetition system so the card is more
+                    // susceptible to be displayed again
+
+                    if(equal_card_id && (daysDifferencePreviousLesson > 0) && lesson_card.level === "Mastered") {
+
+                      for (const treshold in WEIGHTS) {
+                        if(daysDifferenceToday <= treshold) {
+                          weight = WEIGHTS[treshold]
+                          break
+                        }
+                      }
+
+                      mastered += weight
+                    }
+                })
+            }
+
+            // If the 'mastered weight' is superior or equal to the treshold, it should be removed from the list
+            if (mastered >= MASTERED_TRESHOLD) {
+                to_remove.push(card.id)
+            }
+        })
+
+        filteredCardsList = filteredCardsList.filter(c => !to_remove.includes(c.id))
+    }
+  }
+
+  adjustCardsList()
+
+
+  const cardsNumber = filteredCardsList.length
+
+
+  // -------------------- Theme & Settings --------------------
+
+  themeToggle.addEventListener("click", () => {
+      if (window.localStorage.theme == "light") {
+          enableTrackerButton.classList.add("bg-secondary")
+      } else {
+          enableTrackerButton.classList.remove("bg-secondary")
+      }
+
+      if (progressChart) {
+          renderChart(score)
+      }
+  })
+
+
+  shuffleButton.addEventListener("click", () => {
+      shuffle = !shuffle
+
+      shuffledCardsList = filteredCardsList.map(value => ({
+              value,
+              sort: Math.random()
+          }))
+          .sort((a, b) => a.sort - b.sort)
+          .map(({
+              value
+          }) => value)
+      if (shuffle) {
+          shuffleButton.classList.add("btn-primary")
+          shuffleButton.classList.remove("btn-outline-primary")
+      } else {
+          shuffleButton.classList.remove("btn-primary")
+          shuffleButton.classList.add("btn-outline-primary")
+      }
+
+      renderCards()
+  })
+
+  // -------------------- Lesson Tracking & Progress Chart --------------------
+
+  const renderChart = (score) => {
+
+      if (progressChart) {
+          progressChart.destroy(); // Remove the old chart before re-rendering
+      }
+
+      const ctx = document.getElementById("scoreChart").getContext("2d");
+
+      progressChart = new Chart(ctx, {
+          type: "doughnut",
+          data: {
+              labels: '',
+              datasets: [{
+                  label: "Progress",
+                  data: [score.mastered, score.still_learning],
+                  backgroundColor: ["rgb(32, 201, 151)", "rgb(185 14 58)"],
+                  borderColor: 'transparent',
+                  borderWidth: 2,
+                  borderJoinStyle: "round",
+                  borderAlign: "center",
+                  borderRadius: 20,
+                  cutout: "90%",
+              }]
+          },
+          options: {
+              responsive: true,
+
+              plugins: {
+                  legend: {
+                      display: false
+                  },
+                  tooltip: {
+                      callbacks: {
+                          label: (ctx) => {
+                              if (ctx.dataIndex === 0) {
+                                  return `Mastered: ${score.mastered}`;
+                              } else {
+                                  return `Still learning: ${score.still_learning}`;
+                              }
+                          },
+                      },
+                  },
+              },
+          },
+          plugins: [{
+              id: "centerText",
+              afterDatasetsDraw(chart, args, plugins) {
+                  const {
+                      ctx,
+                      data,
+                      chartArea: {
+                          width,
+                          height
+                      }
+                  } = chart;
+
+
+                  const x = chart.getDatasetMeta(0).data[0].x
+                  const y = chart.getDatasetMeta(0).data[0].y
+
+
+                  chart.getDatasetMeta(0).data.forEach((value, index) => {
+                      const innerRadius = chart.getDatasetMeta(0).data[index].innerRadius
+                      const outerRadius = chart.getDatasetMeta(0).data[index].outerRadius
+
+                      const endAngle = chart.getDatasetMeta(0).data[index].endAngle
+                      const radius = (outerRadius + innerRadius) / 2
+                      const thickness = (outerRadius - innerRadius) / 2;
+
+
+                      const xCoor = x + radius * Math.cos(endAngle)
+                      const yCoor = y + radius * Math.sin(endAngle)
+
+                      const coordinates = []
+
+                      for (let i = -0.04; i <= 0.04; i += 0.01) {
+                          const xCoor = x + radius * Math.cos(endAngle + i)
+                          const yCoor = x + radius * Math.sin(endAngle + i)
+
+                          coordinates.push({
+                              x: xCoor,
+                              y: yCoor
+                          })
+                      }
+
+                      ctx.save()
+                      ctx.font = "bold 42px Inter";
+                      ctx.fillStyle = window.localStorage.theme === "dark" ? "#f2f2f2" : "#222";
+                      ctx.textAlign = "center";
+                      ctx.textBaseline = "middle";
+
+                      ctx.fillText(percentage + "%", width / 2, height / 2);
+                      ctx.fillStyle = data.datasets[0].backgroundColor[index]
+                      ctx.beginPath()
+                      coordinates.forEach(({
+                          x,
+                          y
+                      }) => {
+                          ctx.arc(-x, y, thickness, 0, 2 * Math.PI)
+                      })
+                      ctx.fill()
+
+                      ctx.restore();
+                  })
+              }
+          }]
+      });
+  }
+
+  const finishLesson = async () => {
+
+      // When the lesson is finished, put the filtered cards back in the initial card "deck" to save it in the database
+
+      filteredCardsList.forEach(filteredCard => {
+
+        const equalToId = (elem) => elem.id == filteredCard.id
+        let index = cardsList.findIndex(equalToId)
+        cardsList.splice(index, 1, filteredCard)
+      })
+    
+
+      data = {
+          list_id: listId,
+          list_path: listPath,
+          list_cards: shuffle ? shuffledCardsList : cardsList
+      }
+
+      try {
+          await fetch("/update_level", {
+                  method: "POST",
+                  headers: {
+                      "Content-Type": "application/json"
+                  },
+
+                  body: JSON.stringify(data)
+              }).then(res => res.json())
+
+          cardsList.forEach(card => {
+              if (card.level == "Mastered") {
+                  score.mastered += 1
+              } else {
+                  score.still_learning += 1
+              }
+          })
+
+          const total = score.mastered + score.still_learning;
+          percentage = total > 0 ? Math.round((score.mastered / total) * 100) : 0;
+
+
+          switch (true) {
+              case (percentage < 20):
+                  message = "It’s a start! Keep practicing and you’ll improve quickly."
+                  break;
+              case (percentage >= 20 && percentage < 40):
+                  message = "It’s a start! Keep practicing and you’ll improve quickly."
+                  break;
+              case (percentage >= 35 && percentage < 55):
+                  message = "Good effort! You’re building a solid foundation."
+                  break;
+              case (percentage >= 55 && percentage < 85):
+                  message = "Nice progress! You’re more than halfway there."
+                  break;
+              case (percentage >= 85 && percentage < 100):
+                  message = "Awesome! You’re almost at perfection.”"
+                  break;
+              case (percentage == 100):
+                  message = "Perfect score! You’ve mastered this set."
+                  break;
+              default: 
+                  message = "Keep going !"
+          }
+
+          // Hide the card and show the chart with the percentage and the score
+          cardsContainer.innerHTML = `
+                            <div class="finished-lesson w-50 py-5 mb-5 mx-auto">
+                              <h4 class="message my-5">${message}</h4>
+                              <canvas id="scoreChart" width="400" height="200"></canvas>
+                              <div class="stats d-flex flex-column">
+                                <div id="know" class="stat rounded-pill py-2 px-4 d-flex justify-content-between">Know <span>${score.mastered}</span></div>
+                                <div id="stillLearning" class="stat rounded-pill py-2 px-4 d-flex justify-content-between">Still learning <span>${score.still_learning}</span></div>
+                              </div>
+                              <button id="back_button" class="btn btn-primary">Back</button> 
+                            </div>
+            `
+
+          document.querySelector(".actions").classList.add("d-none")
+          renderChart(score)
+
+          document.getElementById("back_button").addEventListener("click", () => window.location.reload())
+      } catch (err) {
+          console.error("Error updating card:", err);
+      }
+
+  }
+
+  const renderCards = () => {
+
+      currentCard = !shuffle ? filteredCardsList[cardCounter] : shuffledCardsList[cardCounter]
+      html = `<div class="card card_${currentCard.id}  bg-primary mx-auto mt-4 d-flex flex-column" data-list-id=${listId} data-card-id="${currentCard.id}" data-term="${currentCard.term}" data-definition="${currentCard.definition}">
+                    <div class="card-header">
+                        term
+                    </div>
+                    <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                       <h4 class="card-title">${currentCard.term}</h4>
+                    </div>
+             </div>
+              `
+
+
+      cardsContainer.innerHTML = html
+      progression.innerHTML = `${cardCounter + 1}/${cardsNumber}`
+      card = document.querySelector(".card")
+
+      cardsContainer.firstChild.addEventListener("click", () => {
+
+          flipped = !flipped
+
+          gsap.fromTo(".card", {
+              duration: 0.5,
+              rotateX: 0,
+          }, {
+              duration: 0.5,
+              rotateX: 180,
+          }, )
+
+          if (flipped) {
+              card.innerHTML = `
+                         <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                            <h4 class="card-title">${card.dataset.definition}</h4>
+                       </div>
+                        <div class="card-header">
+                        definition
+                       </div>
+                        `
+
+
+
+          } else {
+              card.innerHTML = `
+                    <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                       <h4 class="card-title">${currentCard.term}</h4>
+                    </div>
+                    <div class="card-header">
+                        term
+                    </div>
+                    `
+
+          }
+
+          gsap.to(".card .card-title, .card .card-header", {
+              duration: 0.5,
+              rotateX: 180,
+          })
+      })
+  }
+
+  renderCards()
+
+  const terms = document.querySelectorAll(".term")
+
+  const previousButton = document.getElementById("previous_button")
+  const nextButton = document.getElementById("next_button")
+  const enableTrackerButton = document.getElementById("enableProgressTracker")
+
+  enableTrackerButton.addEventListener("change", (e) => {
+
+      trackProgress = !trackProgress
+      cardCounter = 0
+      renderCards()
+      checkButtons()
+
+      if (e.target.checked) {
+          previousButton.classList.remove("btn-outline-primary")
+          previousButton.classList.add("btn-outline-danger")
+          nextButton.classList.remove("btn-outline-primary")
+          nextButton.classList.add("btn-outline-success")
+          previousButton.innerHTML = `<i class="bi bi-x"></i>`
+          nextButton.innerHTML = `<i class="bi bi-check"></i>`
+      } else {
+          previousButton.innerHTML = `<i class="bi bi-arrow-left"></i>`
+          nextButton.innerHTML = `<i class="bi bi-arrow-right"></i>`
+          previousButton.classList.add("btn-outline-primary")
+          previousButton.classList.remove("btn-outline-danger")
+          nextButton.classList.add("btn-outline-primary")
+          nextButton.classList.remove("btn-outline-success")
+      }
+
+  })
+
+
+  let editMode = false
+
+  const checkButtons = () => {
+
+      if (cardCounter == 0 && !trackProgress) {
+          previousButton.setAttribute("disabled", "")
+          nextButton.removeAttribute("disabled")
+      } else if (cardCounter == (cardsNumber - 1) && !trackProgress) {
+          nextButton.setAttribute("disabled", "")
+          previousButton.removeAttribute("disabled")
+      } else {
+          nextButton.removeAttribute("disabled")
+          previousButton.removeAttribute("disabled")
+
+      }
+  }
+
+  const switchCard = (direction) => {
+
+    let previous_direction = direction === "previous"
+
+    // Determine card level based on the direction
+    let label = previous_direction ? "Still learning" : "Mastered"
+
+
+    const COLORS = {
+      still_learning: "#DC3444",
+      mastered: "#00ff17",
+    }
+
+    // Determine color of the animation based on the direction (only if we track the progress)
+
+    const color = previous_direction ? COLORS.still_learning : COLORS.mastered;
+      
+    flipped = false
+
+    // If progress tracking is enabled, cardCounter always increases; otherwise, left/right buttons increment/decrement it
+
+    if (trackProgress) {
+          cardCounter++
+          if (shuffle) {
+              shuffledCardsList[cardCounter - 1].level = label
+          } else {
+              filteredCardsList[cardCounter - 1].level = label
+          }
+
+          if (cardCounter == cardsNumber) {
+              finishLesson()
+              cardCounter = 0
+
+          }
+
+      } else if ((previous_direction && cardCounter > 0) || (!previous_direction && cardCounter < cardsNumber - 1)) {
+          cardCounter += previous_direction ? -1 : 1;
+      }
+
+
+      renderCards()
+
+      // Card shifting animation
+
+      gsap.fromTo(card, {
+          x: previous_direction ? -135 : 135,
+          rotateY: previous_direction ? -70 : 70,
+      }, {
+          x: 0,
+          rotateY: 0,
+      })
+
+      // Briefly add a colored shadow and text to the card (Green: right, Red: wrong) if the progress tracker is on
+      if (trackProgress) {
+      
+          gsap.fromTo(card, {
+            boxShadow: trackProgress ? `0px 0px 25px 4px ${color}, inset 0px 0px 25px 8px ${color}` : "none",
+            color: `${color}!important`,
+            textShadow: `0 0 10px ${color}`
+          }, {
+            boxShadow: "0px 0px 0px 0px transparent",
+            textShadow: "none",
+            color: "white"
+          })
+        
+      }
+      checkButtons()
+
+  }
+
+  previousButton.addEventListener("click", () => switchCard("previous"))
+
+  nextButton.addEventListener("click", () => switchCard("next"))
+
+
+  let flipped = false
+
+  // Replace term display with editable form on click
+
+  terms.forEach(term => {
+      term.children[0].children[1].addEventListener("click", async () => {
+
+          editMode = !editMode
+
+          list_path = term.dataset.listPath
+          card_id = term.dataset.cardId
+          term_value = term.children[0].children[0].children[0].innerHTML
+          definition_value = term.children[0].children[0].children[1].innerHTML
+
+
+          html = `<form action="/update_card" method="post" class="m-0 py-1 px-0 d-flex flex-row justify-content-between">
+              <div class="wrapper d-flex">
+                  <input type="hidden" name="list_path" value="${list_path}">
+                  <input type="hidden" name="list_id" value="${listId}">
+                  <input type="hidden" name="card_id" value="${card_id}">
+                  <input type="text" autofocus name="new_term" class="border border-2 border-light border-top-0 border-start-0 border-end-0 bg-transparent" value="${term_value}">
+                  <input type="text" name="new_definition" class="border border-2 border-light border-top-0 border-bottom-0 border-end-0 bg-transparent ps-5" value="${definition_value}">
+              </div>
+              <button class="btn text-warning rounded-circle edit-button " type="submit">
+                  <i class="bi bi-pencil"></i>
+              </button>
+          </form>
+          `
+
+
+          term.innerHTML = html
+      })
+  })
+
+
+  checkButtons()
+</script>
+
+{% endblock %}

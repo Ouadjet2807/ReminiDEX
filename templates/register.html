@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Register
+{% endblock %}
+
+{% block main %}
+
+    <div class="login-container">
+
+     <div class="left">
+            <div class="quote">
+                <i class="bi bi-quote"></i>
+                <div class="text">
+                    <h3>We are what we repeatedly do. Excellence, then, is not an act, but a habit.</h3>
+                    <h4>— Will Durant, paraphrasing Aristotle</h4>
+                </div>
+            </div>
+            <div class="img-box">
+                <img src="/static/imgs/aristotle_no_bg.png" alt="">
+            </div>
+        </div>
+        
+        <div class="right">
+
+            <h2 class="text-center mt-20">Register</h2>
+            
+            <form action="/register" method="post" id="register">
+                <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="username" placeholder="Username" type="text">
+                <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="password" placeholder="Password" type="password">
+                <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="confirmation" placeholder="Confirm password" type="password">
+                <button class="form-control btn btn-primary mx-auto w-auto">Register</button>
+            </form>
+            
+            <p class="account_info text-center py-5">Already have an account ? <br /> <a class="text-decoration-none text-center" href="/login">Login</a></p>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "layout.html" %} {% block title %} Home {% endblock %} {% block main
+%}
+
+<div class="container" id="content">
+  <div class="container-header">
+    <ul class="nav nav-tabs">
+      <li class="nav-item tab" role="presentation">
+        <button
+          class="nav-link active"
+          id="lists-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#lists-tab-pane"
+          type="button"
+          role="tab"
+          aria-controls="lists-tab-pane"
+          aria-selected="true"
+        >
+          Lists
+        </button>
+      </li>
+      <li class="nav-item tab" role="presentation">
+        <button
+          class="nav-link"
+          id="folders-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#folders-tab-pane"
+          type="button"
+          role="tab"
+          aria-controls="folders-tab-pane"
+          aria-selected="false"
+        >
+          Folders
+        </button>
+      </li>
+    </ul>
+  </div>
+  <div class="content-list d-flex flex-column pt-5">
+    {% if lists | length < 1 %}
+    <p class="text-center">You have no list yet</p>
+    <button class="btn btn-primary rounded-pill mx-auto">
+      <a class="text-light text-decoration-none" href="{{ url_for('create_list', list=None) }}">Create a list</a>
+    </button>
+
+    {% endif %} {% for list in lists %}
+    <div
+      class="list d-flex rounded-3 border border-primary-subtle mx-auto my-2 px-3 py-3 w-100 align-items-center"
+    >
+      <a
+        class="text-decoration-none d-flex text-light flex-column w-100"
+        href="{{ url_for('show_list', list_path=list.path) }}"
+      > 
+      <span>{{list.cards | length }} cards</span>
+      <div class="name d-flex align-items-center">
+          <i class="text-light bi bi-collection"></i>
+          <h4 class="m-0 p-0">{{list.title}}</h4>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %} {% block script %}
+
+<script>
+      /**
+  * Homepage setting
+  * Handles content display with tabs.
+  */
+
+  const tabs = document.querySelectorAll(".tab");
+  const contentList = document.querySelector(".content-list");
+
+
+  // Display either cards lists, either folders depending on the active tab
+
+  let activeTab = "lists-tab";
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      if (tab.children[0].classList.contains("active")) {
+        activeTab = tab.children[0].id;
+      }
+      if (activeTab == "lists-tab") {
+        contentList.innerHTML = `{% if lists | length < 1 %}
+                                  <p class="text-center">You have no list yet</p>
+                                  <button class="btn btn-primary rounded-pill mx-auto"><a class="text-light text-decoration-none" href="{{ url_for('create_list', list=None) }}">Create a list</a></button>
+
+                                  {% endif %}
+                                  {% for list in lists %}
+                                      <div class="list d-flex rounded-3 border border-primary-subtle mx-auto my-2 px-3 py-3 w-100 align-items-center">
+                                          <a class="text-decoration-none d-flex text-light flex-column w-100" href="{{ url_for('show_list', list_path=list.path) }}">
+                                                <span>{{list.cards | length }} cards</span>
+                                                <div class="name d-flex align-items-center">
+                                                  <i class="text-light bi bi-collection"></i>
+                                                  <h4 class="m-0 p-0">{{list.title}}</h4>
+                                              </div>
+                                          </a>
+                                      </div>
+                                  {% endfor %}
+                                  `;
+      } else {
+        contentList.innerHTML = `{% if folders | length < 1 %}
+                                  <p class="text-center">You have no folder yet</p>
+                                  <button class="btn btn-primary rounded-pill mx-auto" data-bs-toggle="modal" data-bs-target="#createFolderModal">Create a folder</button>
+
+                                {% endif %}
+                                {% for folder in folders %}
+                                    <div class="folder d-flex rounded-3 border border-primary-subtle mx-auto my-2 px-3 py-3 w-100 align-items-center">
+                                        <a class="text-decoration-none d-flex text-light align-items-center w-100" href="{{ url_for('show_folder', folder_path=folder.path) }}">
+                                            <i class="text-light fa-regular fa-folder-closed"></i>
+                                            <h4 class="m-0 p-0">{{folder.name}}</h4>
+                                        </a>
+                                    </div>
+                                {% endfor %}
+                              `;
+
+            }
+        
+    });
+  });
+</script>
+
+{% endblock %}

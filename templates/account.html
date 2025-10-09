@@ -1,0 +1,98 @@
+{% extends 'layout.html' %}
+
+{% block main %}
+    
+<div class="container" id="account">
+    
+    <h2 class="greetings text-center">Hi, {{username}}</h2>
+
+    <p class="text-center py-5">You have <span class="text-primary">{{list_number}}</span> lists</p>
+
+    <div class="actions d-flex flex-column justify-content-between w-25 mx-auto">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">Change password</button>
+        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">Delete my account</button>
+    </div>
+    
+</div>
+
+<div
+    class="modal fade"
+    id="changePasswordModal"
+    aria-labelledby="changePassordModalLabel"
+    aria-hidden="true"
+>
+    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+        <div class="modal-header">
+        <h5 class="modal-title"> Change your password</h5>
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+        ></button>
+        </div>
+        <div class="modal-body">
+        <form action="/change_password" method="post">
+            <input type="password" name="current_password" class="form-control my-1" placeholder="Current password">
+            <input type="password" name="new_password" class="form-control my-1" placeholder="New password">
+            <input type="password" name="confirmation" class="form-control my-1" placeholder="Confirm your new password">
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+                >
+                Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">Change password</button>
+            </div>
+        </form>
+        </div>
+    </div>
+    </div>
+</div>
+
+<div
+    class="modal fade"
+    id="deleteAccountModal"
+    aria-labelledby="deleteAccountModalLabel"
+    aria-hidden="true"
+>
+    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+        <div class="modal-header">
+        <h5 class="modal-title"> Delete your account</h5>
+        <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+        ></button>
+        </div>
+        <div class="modal-body">
+
+        <small
+          ><strong
+            >Are you sure you want to delete your account ? This action is irreversible</strong
+          ></small
+        >
+        </div>
+         <div class="modal-footer">
+        <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button class="btn btn-danger" type="button">
+          <a
+            class="text-light text-decoration-none"
+            href="/delete_account"
+            >Delete</a
+          >
+        </button>
+      </div>
+    </div>
+    </div>
+</div>
+
+
+{% endblock %}

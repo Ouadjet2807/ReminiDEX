@@ -1,0 +1,665 @@
+@keyframes imgAppear {
+  0% {
+    transform: scale(1.2);
+    filter: blur(10px);
+  }
+  100% {
+    transform: scale(1);
+    filter: blur(0px);
+  }
+}
+@keyframes imgAppearDark {
+  0% {
+    transform: scale(1.2);
+    filter: blur(10px) brightness(7.5);
+  }
+  100% {
+    transform: scale(1);
+    filter: blur(0px) brightness(7.5);
+  }
+}
+@keyframes textAppear {
+  0% {
+    transform: translateY(100px);
+    opacity: 0;
+    filter: blur(10px);
+  }
+  100% {
+    transform: translateY(0px);
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+@keyframes authorAppear {
+  0% {
+    opacity: 0;
+    filter: blur(10px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+html {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: #e8eae9;
+  transition: 0.3s ease;
+  min-height: 100Vh;
+}
+
+body.dark {
+  background: #212429;
+  box-shadow: inset -55px -52px 104px #282834, inset 86px 150px 128px rgba(1, 0, 21, 0.168627451);
+}
+body.dark .bg-dark {
+  color: #e3e3e3;
+}
+body.dark h2 {
+  color: #e3e3e3;
+}
+body.dark nav {
+  box-shadow: none;
+}
+body.dark .modal-content {
+  background: #212429 !important;
+}
+body.dark .modal-content input {
+  background: #2a3546 !important;
+  color: #e3e3e3;
+}
+body.dark small {
+  color: #e3e3e3;
+}
+body.dark .modal .modal-title {
+  color: #e3e3e3;
+}
+body.dark .modal input {
+  color: #e3e3e3;
+}
+body.dark .modal input::placeholder {
+  color: #e3e3e3;
+}
+body.dark .login-container .left {
+  background: linear-gradient(90deg, #2a3445, transparent);
+}
+body.dark .login-container .left .quote h3 {
+  animation: textAppear 2s ease forwards;
+}
+body.dark .login-container .left .quote h5 {
+  animation: authorAppear 2s ease 2s forwards;
+}
+body.dark .login-container .left img {
+  animation: imgAppearDark 2s ease forwards !important;
+  filter: brightness(7.5);
+}
+body.dark .login-container .account_info {
+  color: #e3e3e3;
+}
+body.dark #account p {
+  color: #e3e3e3;
+}
+body.dark #create_list_form .card-header {
+  border-bottom: 2px solid #4174d5 !important;
+}
+body.dark #create_list_form .card-header .card-title {
+  color: #4174d5 !important;
+}
+body.dark #create_list_form .card-header .delete-card {
+  width: 30px;
+  height: 30px;
+  border: 1.5px solid #4174d5 !important;
+  color: #4174d5 !important;
+  transition: 0.3s ease-in;
+}
+body.dark #create_list_form .card-header .delete-card:hover {
+  background: rgba(0, 47, 255, 0.2862745098);
+}
+body.dark #create_list_form label {
+  color: #4174d5 !important;
+}
+body.dark #create_list_form .btn.add-card {
+  color: #4174d5 !important;
+  border: 2px solid #4174d5 !important;
+  transition: 0.3s ease-in;
+}
+body.dark #create_list_form .btn.add-card:hover {
+  background: transparent;
+  box-shadow: 0px 0px 20px -5px #4174d5 !important;
+}
+body.dark #create_list_form .create-list-btn {
+  background: #4174d5 !important;
+  color: #e3e3e3 !important;
+}
+body.dark #create_list_form .create-list-btn:hover {
+  box-shadow: 0px 0px 20px -5px #4174d5 !important;
+  border: 2px solid #4174d5 !important;
+  color: #e3e3e3 !important;
+}
+body.dark nav,
+body.dark .card,
+body.dark .dropdown-menu,
+body.dark .term,
+body.dark #content .list,
+body.dark #content .folder,
+body.dark #lists-tab.active,
+body.dark #folders-tab.active,
+body.dark #account input, body.dark #create_list_form input,
+body.dark #login input, body.dark #register input,
+body.dark textarea {
+  background: linear-gradient(0deg, #2a3546, #252943) !important;
+  color: #e3e3e3;
+}
+body.dark nav::placeholder,
+body.dark .card::placeholder,
+body.dark .dropdown-menu::placeholder,
+body.dark .term::placeholder,
+body.dark #content .list::placeholder,
+body.dark #content .folder::placeholder,
+body.dark #lists-tab.active::placeholder,
+body.dark #folders-tab.active::placeholder,
+body.dark #account input::placeholder, body.dark #create_list_form input::placeholder,
+body.dark #login input::placeholder, body.dark #register input::placeholder,
+body.dark textarea::placeholder {
+  color: #e3e3e3 !important;
+}
+body.dark nav .dropdown-item:hover,
+body.dark .card .dropdown-item:hover,
+body.dark .dropdown-menu .dropdown-item:hover,
+body.dark .term .dropdown-item:hover,
+body.dark #content .list .dropdown-item:hover,
+body.dark #content .folder .dropdown-item:hover,
+body.dark #lists-tab.active .dropdown-item:hover,
+body.dark #folders-tab.active .dropdown-item:hover,
+body.dark #account input .dropdown-item:hover, body.dark #create_list_form input .dropdown-item:hover,
+body.dark #login input .dropdown-item:hover, body.dark #register input .dropdown-item:hover,
+body.dark textarea .dropdown-item:hover {
+  background: #212429 !important;
+}
+body.dark #list_container .options {
+  color: #e3e3e3;
+}
+body.dark #list_container .list-name {
+  color: #e3e3e3;
+}
+body.dark #list_container .edit-button {
+  color: #e3e3e3;
+}
+body.dark #list_container .edit-button:hover {
+  color: #0c6dfd;
+}
+body.dark #list_container .actions {
+  color: #e3e3e3;
+}
+body.dark #list_container .finished-lesson h4 {
+  color: #e3e3e3;
+}
+body.dark #list_container .finished-lesson .stats {
+  gap: 10px;
+}
+body.dark #list_container .finished-lesson .stats .stat {
+  width: 15vw;
+}
+body.dark #list_container .finished-lesson .stats #know {
+  background-color: #163b45;
+  color: #00d293;
+}
+body.dark #list_container .finished-lesson .stats #stillLearning {
+  background-color: #451e28;
+  color: #f76f00;
+}
+body.dark #folder h4, body.dark #folder span {
+  color: #e3e3e3;
+}
+body.dark #folder .list .options {
+  color: #e3e3e3;
+}
+body.dark #folder .list .list-icon {
+  background: #2a3546 !important;
+}
+body.dark #folder .list:hover {
+  background: #2a3546 !important;
+}
+body.dark #content .content-list .list:hover {
+  background: linear-gradient(0deg, #2a3546, #252943);
+  box-shadow: inset -2px 0px 33px 8px #121a2b;
+}
+
+.toast {
+  top: 0;
+}
+
+nav {
+  background: linear-gradient(180deg, #647dff, rgba(0, 26, 255, 0.2196078431));
+  transition: 0.3s ease;
+}
+nav .navbar-brand {
+  font-family: "DM Mono";
+  font-weight: 800;
+  font-size: 25px;
+  padding-left: 20px;
+}
+nav .navbar-brand span {
+  color: #1600ff;
+  text-transform: uppercase;
+}
+nav .nav-right {
+  gap: 10px;
+}
+nav .nav-right .theme-switcher {
+  cursor: pointer;
+}
+nav .nav-link {
+  font-family: "DM Mono";
+}
+nav .dropdown-menu {
+  margin-left: -7vw;
+}
+
+.main .container {
+  padding: 100px;
+}
+.main .rounded-circle {
+  width: 2vw;
+  height: 2vw;
+  display: flex;
+  font-size: 0.8vw;
+  align-items: center;
+  justify-content: center;
+}
+.main form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 20px 0;
+}
+.main .login-container {
+  height: 92.5vh;
+  display: grid;
+  grid-template-columns: 50% 50%;
+  padding: 10px;
+}
+.main .login-container .left {
+  transition: 0.3s ease;
+  background: linear-gradient(90deg, #065bfd, transparent);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  padding: 50px;
+  border-radius: 20px 0 0 20px;
+}
+.main .login-container .left .quote {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  z-index: 6;
+  width: 75%;
+  top: 35%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.main .login-container .left .quote i {
+  font-size: 7vw;
+  margin-left: -30px;
+  color: rgba(255, 255, 255, 0.1803921569);
+  line-height: 1px;
+  animation: textAppear 2s ease forwards;
+}
+.main .login-container .left .quote .text {
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+}
+.main .login-container .left .quote .text h3 {
+  font-family: "DM Sans";
+  font-size: 3.5vw;
+  font-weight: 300;
+  line-height: 9vh;
+  animation: textAppear 2s ease forwards;
+}
+.main .login-container .left .quote .text h4 {
+  opacity: 0;
+  animation: authorAppear 2s ease 2s forwards;
+}
+.main .login-container .left .img-box {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+.main .login-container .left .img-box img {
+  opacity: 0.2;
+  width: 25vw;
+  margin-top: 18vh;
+  transition: 0.3s ease;
+  animation: imgAppear 2s ease forwards;
+}
+.main .login-container .right {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.main #account .actions {
+  gap: 10px;
+}
+.main #create_list_form textarea {
+  resize: none;
+}
+.main #create_list_form .cards-group .card {
+  font-family: "DM Mono";
+}
+.main #create_list_form .cards-group .card .card-header {
+  border-bottom: 2px solid #91b6f4;
+}
+.main #create_list_form .cards-group .card .card-header .card-title {
+  color: #0c6dfd;
+}
+.main #create_list_form .cards-group .card .card-header .delete-card {
+  width: 30px;
+  height: 30px;
+  border: 1.5px solid #0c6dfd;
+  color: #0c6dfd;
+  transition: 0.3s ease-in;
+}
+.main #create_list_form .cards-group .card .card-header .delete-card:hover {
+  background: rgba(0, 47, 255, 0.2862745098);
+}
+.main #create_list_form .cards-group .card label {
+  text-transform: uppercase;
+  font-size: small;
+  color: #0c6dfd;
+}
+.main #create_list_form .btn.add-card {
+  color: #0c6dfd;
+  border: 2px solid #0c6dfd;
+  transition: 0.3s ease-in;
+}
+.main #create_list_form .btn.add-card:hover {
+  background: transparent;
+  box-shadow: 0px 0px 20px -5px #0c6dfd;
+}
+.main #create_list_form .create-list-btn {
+  background: #0c6dfd;
+  color: #e3e3e3;
+  transition: 0.3s ease-in;
+}
+.main #create_list_form .create-list-btn:hover {
+  background: white;
+  box-shadow: 0px 0px 20px -5px #0c6dfd;
+  border: 2px solid #0c6dfd;
+  color: #0c6dfd;
+}
+.main #content .content-list button {
+  width: max-content;
+}
+.main #content .content-list .folder {
+  cursor: pointer;
+  gap: 10px;
+  transition: 0.3s ease;
+  background: #0d6efd;
+}
+.main #content .content-list .folder a {
+  gap: 10px;
+}
+.main #content .content-list .folder a h4,
+.main #content .content-list .folder a i {
+  transition: 0.3s ease;
+}
+.main #content .content-list .folder a .name i {
+  font-size: 1.5vw;
+}
+.main #content .content-list .folder:hover {
+  box-shadow: inset -2px 0px 33px 8px #84aeff;
+}
+.main #content .content-list .list {
+  cursor: pointer;
+  gap: 10px;
+  transition: 0.3s ease;
+  background: #0d6efd;
+}
+.main #content .content-list .list a span,
+.main #content .content-list .list a h4,
+.main #content .content-list .list a i {
+  transition: 0.3s ease-in;
+}
+.main #content .content-list .list a .name {
+  gap: 10px;
+}
+.main #content .content-list .list a .name i {
+  font-size: 1.3vw;
+}
+.main #content .content-list .list:hover {
+  box-shadow: inset -2px 0px 33px 8px #84aeff;
+}
+.main #folder .name {
+  gap: 15px;
+}
+.main #folder .name i {
+  font-size: 2vw;
+}
+.main #folder .list {
+  transition: 0.3s ease-in;
+}
+.main #folder .list .options {
+  cursor: pointer;
+}
+.main #folder .list:hover {
+  background: #f8f9fa;
+}
+.main #folder .keywords-list {
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.main #folder .keywords-list label {
+  gap: 10px;
+  accent-color: #0d6efd;
+}
+.main #folder .folder_lists .list a {
+  flex-grow: 1.5;
+  gap: 20px;
+}
+.main #folder .folder_lists .list a i {
+  font-size: 1.5vw;
+}
+.main #contentModal .add-content-list {
+  gap: 20px;
+}
+.main #list_container .terms {
+  padding: 0px 200px;
+}
+.main #list_container .list-name {
+  gap: 15px;
+}
+.main #list_container .list-name i {
+  font-size: 1.8vw;
+  transform: rotate(45deg);
+}
+.main #list_container .cards .card {
+  background: linear-gradient(180deg, #647dff, rgba(0, 26, 255, 0.2196078431));
+  color: #fff;
+  height: 20vw;
+  width: 40vw;
+  box-shadow: 0px 0px 0px 0px transparent;
+}
+.main #list_container .cards .card .levels {
+  gap: 10px;
+}
+.main #list_container .cards .card .levels label {
+  gap: 10px;
+}
+.main #list_container .cards .card .card-title::selection {
+  background: transparent;
+}
+.main #list_container .cards .card .card-title::-moz-selection {
+  background: transparent;
+}
+.main #list_container .actions {
+  display: grid;
+  grid-template-columns: 33% 33% 33%;
+  justify-content: center;
+  justify-items: center;
+  gap: 40px;
+}
+.main #list_container .actions .changeCard {
+  gap: 25px;
+}
+.main #list_container .terms .term {
+  min-width: 50vw;
+  background: linear-gradient(180deg, #647dff, rgba(0, 26, 255, 0.2196078431));
+  color: #e3e3e3;
+}
+.main #list_container .terms .term .term-container {
+  gap: 10px;
+  flex-grow: 1.5;
+}
+.main #list_container .terms .term .term-container span {
+  min-width: 13.9vw;
+}
+.main #list_container .terms .term form {
+  flex-grow: 1.5;
+}
+.main #list_container .terms .term form input[type=text] {
+  min-width: 12.9vw;
+  color: #e3e3e3;
+}
+.main #list_container .terms .term .wrapper {
+  gap: 15px;
+}
+.main #list_container .finished-lesson {
+  display: grid;
+  grid-template-columns: 30% 70%;
+  justify-items: center;
+  align-items: center;
+}
+.main #list_container .finished-lesson .message {
+  grid-column: 1/3;
+}
+.main #list_container .finished-lesson #scoreChart {
+  height: 15vw !important;
+  width: 15vw !important;
+}
+.main #list_container .finished-lesson .stats {
+  gap: 10px;
+}
+.main #list_container .finished-lesson .stats .stat {
+  width: 15vw;
+}
+.main #list_container .finished-lesson .stats #know {
+  background-color: #00b292;
+  color: #5effcf;
+}
+.main #list_container .finished-lesson .stats #stillLearning {
+  background-color: #b90e3a;
+  color: #ff714c;
+}
+.main #list_container .finished-lesson #back_button {
+  grid-column: 1/3;
+  margin-top: 25px;
+}
+
+@media screen and (min-width: 320px) and (max-width: 800px) {
+  .navbar {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+  .navbar .navbar-collapse {
+    width: 100%;
+  }
+  .navbar .navbar-toggler {
+    margin-right: 20px;
+  }
+  .navbar .navbar-nav {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 10px 45px;
+  }
+  .main {
+    padding: 50px 10px;
+  }
+  .main .container {
+    padding: 0;
+  }
+  .main .login-container {
+    display: block;
+  }
+  .main .login-container .left {
+    display: none;
+  }
+  .main .rounded-circle {
+    width: 10vw;
+    height: 10vw;
+    font-size: 3.8vw;
+  }
+  .main #content .content-list .list a .name i, .main #content .content-list .folder a .name i {
+    font-size: 5.3vw;
+  }
+  .main #create_list_container {
+    width: 100% !important;
+  }
+  .main #create_list_container form .inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .main #list_container .finished-lesson {
+    width: 75% !important;
+  }
+  .main #list_container .finished-lesson #scoreChart, .main #list_container .finished-lesson .stats {
+    grid-column: 1/3;
+  }
+  .main #list_container .finished-lesson #scoreChart {
+    height: 50vw !important;
+    width: 50vw !important;
+  }
+  .main #list_container .finished-lesson .stats {
+    margin: 20px;
+  }
+  .main #list_container .finished-lesson .stats .stat {
+    width: 45vw;
+  }
+  .main #list_container .list-name i {
+    font-size: 8.8vw;
+  }
+  .main #list_container .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .main #list_container .cards .card {
+    height: 55vw;
+    width: 85vw;
+  }
+  .main #list_container .terms {
+    padding: 0px;
+    padding-top: 0px !important;
+  }
+  .main #list_container .terms .term {
+    padding: 20px !important;
+  }
+  .main #list_container .terms .term form input[type=text] {
+    max-width: 32vw;
+  }
+  .main #account .actions {
+    width: 65% !important;
+  }
+  .main #folder .folder_actions {
+    width: 75%;
+    margin: 20px auto 0;
+  }
+  .main #folder .folder_lists .list a i {
+    font-size: 5.5vw;
+  }
+}
+@media screen and (min-width: 2000px) {
+  .main .login-container {
+    height: 95.3vh;
+  }
+}
+
+/*# sourceMappingURL=styles.css.map */
