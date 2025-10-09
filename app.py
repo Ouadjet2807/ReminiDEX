@@ -70,7 +70,8 @@ def init_db():
 @app.context_processor
 def inject_user():
     """Get username if logged in"""
-
+    print("session")
+    print(session)
     if "user_id" in session:
         user = {}
         with get_db() as db:
