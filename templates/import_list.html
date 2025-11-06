@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+
+{% block main %}
+
+  <div id="import_list_container" class="w-75">
+    <h2>Import a csv list</h2>
+    <form action="/import_list" method="post" enctype='multipart/form-data'>
+        <div class="icon"><i class="bi bi-file-earmark-arrow-up"></i></div>
+        {{form.hidden_tag()}}
+        {{form.file()}}
+        <span class="file-name">
+
+        </span>
+        {{form.submit()}}
+    </form>
+  </div>
+
+{% endblock %}
+
+{% block script %}
+
+<script>
+
+
+    let file = document.getElementById("file")
+
+    let filePath = ""
+
+    file.addEventListener("change", (e) => {
+        let filePath = e.target.value
+
+        console.log(filePath)
+        const fileName = filePath.split("\\")[2] 
+        let fileNameDiv = document.querySelector(".file-name")
+
+        fileNameDiv.innerHTML = fileName
+    })
+    
+
+</script>
+
+
+{% endblock %}

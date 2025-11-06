@@ -1,18 +1,30 @@
 import sqlite3
 import datetime
 import json
+import csv
+import os
 from flask import g, Flask, render_template, flash, redirect, request, session, jsonify
 from flask_session import Session
 from helpers import login_required
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileRequired, FileAllowed
+from wtforms import SubmitField
 
 app = Flask(__name__)
 
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
+app.config["SECRET_KEY"] = '622351b6-0fca-439b-83c3-236ebadb3f4d3'
+app.config["UPLOAD_FOLDER"] = 'static/files'
 Session(app)
 
 DATABASE = "flashcards.db"
+
+class UploadFileForm(FlaskForm):
+    file = FileField("File", validators=[FileRequired(), FileAllowed(['csv'], 'CSV only!')])
+    submit = SubmitField("Import list")
 
 def get_db():
     """Connexion to the SQLite database"""
@@ -308,7 +320,7 @@ def change_password():
 
         new_password_hash = generate_password_hash(new_password, method="pbkdf2:sha256")
 
-        db.execute("UPDATE users SET hash = (?) WHERE id = (?)", (new_password_hash, user_id))
+        db.xecute("UPDATE users SET hash = (?) WHERE id = (?)", (new_password_hash, user_id))
         flash("Your password has been changed successfully !", "success")
         return redirect("/account")
 
@@ -338,8 +350,9 @@ def create_list():
     - POST: Validates inputs, ensures at least two cards,
       and inserts/updates the list in the database.
     """
-
+    
     preloaded_list_id = request.args.get("list")
+
     user_id = session["user_id"]
 
     page_title = "Create a new list"
@@ -353,7 +366,6 @@ def create_list():
         list_title = request.form.get("title")
         list_description = request.form.get("description")
         cards_number = request.form.get("cards-number")
-
 
         cards = []
 
@@ -379,22 +391,30 @@ def create_list():
 
         with get_db() as db:
 
-            lists_number = db.execute("SELECT COUNT(*) FROM lists").fetchone()
+            lists_numbers = db.execute("SELECT id FROM lists").fetchall()
 
-            lists_last_id = int(lists_number["COUNT(*)"])
+            last_id = 0
 
-            path = str.lower(str(list_title)) + "_" + str(lists_last_id + 1)
+            for l in lists_numbers:
+                last_id = l["id"]
+
 
             if list_id == "/":
+
+                path = str.lower(str(list_title)).replace(" ", "_") + "_" + str(last_id + 1)
+
                 db.execute(
                     "INSERT INTO lists (title, description, cards, path, user_id, creation_date) VALUES (?, ?, ?, ?, ?, ?)",
                     (list_title, list_description, cards_json, path, user_id, creation_date)
                 )
                 flash("List created successfully!", "success")
             else:
+
+                path = str.lower(str(list_title)).replace(" ", "_") + "_" + list_id
+                
                 db.execute(
-                    "UPDATE lists SET title = (?), description = (?), cards = (?) WHERE id = (?) AND user_id = (?)",
-                    (list_title, list_description, cards_json, list_id, user_id)
+                    "UPDATE lists SET title = (?), description = (?), path = (?), cards = (?) WHERE id = (?) AND user_id = (?)",
+                    (list_title, list_description, path, cards_json, list_id, user_id)
                 )
                 flash("List edited successfully!", "success")
 
@@ -404,8 +424,8 @@ def create_list():
 
     if preloaded_list_id:
 
-
         with get_db() as db:
+
             row = db.execute("SELECT * FROM lists WHERE id = (?) AND user_id = (?)", (preloaded_list_id, user_id)).fetchone()
 
             preloaded_list_cards = json.loads(row["cards"])
@@ -461,7 +481,7 @@ def create_folder():
 @app.route("/delete_list", methods=["GET"])
 @login_required
 def delete_list():
-    """Allow user to delete a listt / card deck"""
+    """Allow user to delete a list / card deck"""
 
     user_id = session["user_id"]
     listId = request.args.get("list")
@@ -849,4 +869,71 @@ def update_level():
 
     return {"list": json_list}
 
+
+@app.route("/import_list", methods=["POST", "GET"])
+@login_required
+def import_list(): 
+
+    form  = UploadFileForm()
+
+    user_id = session["user_id"]
+
+    cards = []
+
+    if form.validate_on_submit():
+        file = form.file.data
+
+        upload_dir = os.path.join(app.root_path, "static", "files")
+        os.makedirs(upload_dir, exist_ok=True)
+
+        filename = file.filename
+       
+        file_path = os.path.join(upload_dir, filename)
+
+        file.save(file_path)
+
+        with open(file_path, newline='') as f:
+            reader = csv.reader(f)
+            data = [tuple(row) for row in reader]
+
+            for i, d in enumerate(data):
+                if i > 0:
+                    cards.append({
+                    "id": i,
+                    "term": d[0],
+                    "definition": d[1],
+                    "level": ""
+            })
+
+        cards = json.dumps(cards)
+
+        with get_db() as db:
+
+            lists_numbers = db.execute("SELECT id FROM lists WHERE user_id = ?", (user_id,)).fetchall()
+
+            last_id = 0
+
+            for l in lists_numbers:
+                last_id = l["id"]
+
+            list_id = int(last_id) + 1
+
+            filename = filename.rsplit(".", 1)[0]
+
+            path = str.lower(str(filename)).replace(" ", "_") + "_" + str(list_id)
+
+            db.execute(
+                    "INSERT INTO lists (title, description, cards, path, user_id, creation_date) VALUES (?, ?, ?, ?, ?, ?)",
+                    (filename, "", cards, path, user_id, datetime.datetime.now())
+            )
+
+            url_id = db.execute(
+                    "SELECT id FROM lists WHERE path = ? and user_id = ?",
+                    (path, user_id,)
+            ).fetchone()
+
+
+            return redirect("/create_list?list=" + str(url_id["id"]))
+
+    return render_template("import_list.html", form=form)
 
