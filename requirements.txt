@@ -1,4 +1,6 @@
 Flask
 Flask-Session
-gunicorn
+Flask-WTF
+WTForms
 Werkzeug
+gunicorn
